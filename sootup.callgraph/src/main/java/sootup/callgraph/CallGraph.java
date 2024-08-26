@@ -22,6 +22,7 @@ package sootup.callgraph;
  * #L%
  */
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -35,6 +36,7 @@ public interface CallGraph {
     @Nonnull private final MethodSignature sourceMethodSignature;
     @Nonnull private final MethodSignature targetMethodSignature;
     @Nonnull private final InvokableStmt invokableStmt;
+    private final List<Integer> orders = new LinkedList<>();
 
     public Call(
         @Nonnull MethodSignature sourceMethodSignature,
@@ -58,6 +60,17 @@ public interface CallGraph {
     @Nonnull
     public InvokableStmt getInvokableStmt() {
       return invokableStmt;
+    }
+
+    public void addInvocationOrder(int order) {
+      this.orders.add(order);
+    }
+
+    public boolean happensBefore(Call other) {
+      if (orders.size() > 0 && other.orders.size() > 0) {
+        return orders.get(0) < other.orders.get(0);
+      }
+      return false;
     }
 
     @Override

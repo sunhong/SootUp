@@ -165,6 +165,10 @@ public class GraphBasedCallGraph implements MutableCallGraph {
     return graph.containsEdge(call);
   }
 
+  public Call getCall(MethodSignature sourceMethod, MethodSignature targetMethod) {
+    return graph.getEdge(vertexOf(sourceMethod), vertexOf(targetMethod));
+  }
+
   @Override
   public int callCount() {
     return graph.edgeSet().size();

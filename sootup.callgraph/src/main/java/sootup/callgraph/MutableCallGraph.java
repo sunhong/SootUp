@@ -50,4 +50,15 @@ public interface MutableCallGraph extends CallGraph {
       @Nonnull MethodSignature sourceMethod,
       @Nonnull MethodSignature targetMethod,
       @Nonnull InvokableStmt invokableStmt);
+
+  /**
+   * This method find the corresponding call with method signatures. This is default to make it
+   * compatible with qilin.core.builder.callgraph.OnFlyCallGraph in sootup.qilin
+   *
+   * @param sourceMethod this parameter defines the source node of the edge in the call graph.
+   * @param targetMethod this paramter defines the target node of the edge in the call graph.
+   */
+  default Call getCall(MethodSignature sourceMethod, MethodSignature targetMethod) {
+    return null;
+  }
 }

@@ -210,6 +210,20 @@ public abstract class AbstractCallGraphAlgorithm implements CallGraphAlgorithm {
     }
   }
 
+  /*
+   this method is similar to addCallToCG, but also attach invocation order
+  */
+  protected void addInvocationToCGwithOrder(
+      @Nonnull MethodSignature source,
+      @Nonnull MethodSignature target,
+      @Nonnull InvokableStmt invokeStmt,
+      @Nonnull MutableCallGraph cg,
+      @Nonnull Deque<MethodSignature> workList,
+      int invocationOrder) {
+    addCallToCG(source, target, invokeStmt, cg, workList);
+    cg.getCall(source, target).addInvocationOrder(invocationOrder);
+  }
+
   /**
    * This method resolves all calls from a given source method. resolveCall is called for each
    * invokable statements in the body of the source method that is implemented in the corresponding
@@ -227,16 +241,21 @@ public abstract class AbstractCallGraphAlgorithm implements CallGraphAlgorithm {
       return;
     }
 
-    sourceMethod.getBody().getStmts().stream()
-        .filter(Stmt::isInvokableStmt)
-        .map(Stmt::asInvokableStmt)
-        .forEach(
-            stmt ->
-                resolveCall(sourceMethod, stmt)
-                    .forEach(
-                        targetMethod ->
-                            addCallToCG(
-                                sourceMethod.getSignature(), targetMethod, stmt, cg, workList)));
+    List<InvokableStmt> stmtList =
+        sourceMethod.getBody().getStmts().stream()
+            .filter(Stmt::isInvokableStmt)
+            .map(Stmt::asInvokableStmt)
+            .collect(Collectors.toList());
+    int invocationOrder = 0;
+    for (InvokableStmt stmt : stmtList) {
+      invocationOrder++;
+      List<MethodSignature> targetMethodSignatures =
+          resolveCall(sourceMethod, stmt).collect(Collectors.toList());
+      for (MethodSignature targetMethod : targetMethodSignatures) {
+        addInvocationToCGwithOrder(
+            sourceMethod.getSignature(), targetMethod, stmt, cg, workList, invocationOrder);
+      }
+    }
   }
 
   /**
